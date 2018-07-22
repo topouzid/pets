@@ -105,7 +105,8 @@ public class CatalogActivity extends AppCompatActivity {
                         currentName + " (" +
                         currentBreed + ") Gender=" +
                         currentGender + ", " +
-                        currentWeight + "kg");
+                        currentWeight + "kg" +
+                        "");
             }
 
         } finally {
