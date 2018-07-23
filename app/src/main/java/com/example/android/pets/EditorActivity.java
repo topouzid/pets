@@ -17,6 +17,7 @@ package com.example.android.pets;
 
 import android.content.ContentValues;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
@@ -125,12 +126,21 @@ public class EditorActivity extends AppCompatActivity {
         // Gets the data repository in write mode
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
+        // Read from input fields
+        // Use trim to eliminate leading or trailing white space
+        String nameString = mNameEditText.getText().toString().trim();
+        String breedString = mBreedEditText.getText().toString().trim();
+        if (breedString == null || breedString.equals("")) {
+            breedString = "Unknown";
+        }
         String weightString = mWeightEditText.getText().toString().trim();
-        int weightInt;
+//        int weight = Integer.parseInt(weightString);
+//        String weightString = mWeightEditText.getText().toString().trim();
+        int weight;
         if (!weightString.equals("")) {
-            weightInt = Integer.parseInt(weightString);
+            weight = Integer.parseInt(weightString);
         } else {
-            weightInt = 0;
+            weight = 0;
         }
         /**
          * The following line crashes if we don't fill in the weight of the pet
@@ -139,26 +149,39 @@ public class EditorActivity extends AppCompatActivity {
 //        int weightInt = Integer.parseInt(weightString);
         // Create a new map of values, where column names are the keys
         ContentValues values = new ContentValues();
-        values.put(PetEntry.COLUMN_NAME, mNameEditText.getText().toString().trim());
-        values.put(PetEntry.COLUMN_BREED, mBreedEditText.getText().toString().trim());
+        values.put(PetEntry.COLUMN_NAME, nameString);
+        values.put(PetEntry.COLUMN_BREED, breedString);
         values.put(PetEntry.COLUMN_GENDER, mGender);
-        values.put(PetEntry.COLUMN_WEIGHT, weightInt);
+        values.put(PetEntry.COLUMN_WEIGHT, weight);
 
-        long newRowId = db.insert(PetEntry.TABLE_NAME, null, values);
+        // Insert a new pet into the provider, returning the content URI for the new pet.
+        Uri newUri = getContentResolver().insert(PetEntry.CONTENT_URI, values);
 
-        Log.v("EditorActivity", "Name/Breed/Gender/Weight: " +
-                mNameEditText.getText().toString() + "/" +
-                mBreedEditText.getText().toString()+ "/" +
-                mGenderSpinner.getSelectedItemPosition() +  "/" +
-                weightInt);
-
-        if (newRowId == -1) {
-            Toast toast = Toast.makeText(this, "Error with saving pet", Toast.LENGTH_SHORT);
-            toast.show();
+        // Show a toast message depending on whether or not the insertion was successful
+        if (newUri == null) {
+            // If the new content URI is null, then there was an error with insertion.
+            Toast.makeText(this, getString(R.string.editor_insert_pet_failed),
+                    Toast.LENGTH_SHORT).show();
         } else {
-            Toast toast = Toast.makeText(this, "Pet saved with ID: " + newRowId, Toast.LENGTH_SHORT);
-            toast.show();
+            // Otherwise, the insertion was successful and we can display a toast.
+            Toast.makeText(this, getString(R.string.editor_insert_pet_successful),
+                    Toast.LENGTH_SHORT).show();
         }
+//        long newRowId = db.insert(PetEntry.TABLE_NAME, null, values);
+//
+//        Log.v("EditorActivity", "Name/Breed/Gender/Weight: " +
+//                mNameEditText.getText().toString() + "/" +
+//                mBreedEditText.getText().toString()+ "/" +
+//                mGenderSpinner.getSelectedItemPosition() +  "/" +
+//                weight);
+
+//        if (newRowId == -1) {
+//            Toast toast = Toast.makeText(this, "Error with saving pet", Toast.LENGTH_SHORT);
+//            toast.show();
+//        } else {
+//            Toast toast = Toast.makeText(this, "Pet saved with ID: " + newRowId, Toast.LENGTH_SHORT);
+//            toast.show();
+//        }
     }
 
     @Override
